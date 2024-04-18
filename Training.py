@@ -9,6 +9,7 @@ end_date = pd.to_datetime('2022-02-11')
 Ranking = Ranking[(Ranking["rank_date"]>start_date)&(Ranking["rank_date"]<end_date)]
 Ranking = Ranking.drop(["rank","country_abrv","previous_points","confederation","rank_change","rank_date"], axis = 1)
 print(Ranking.head(10))
+Champion = Champion.drop(["Year","Country","Runners-Up","Third","Fourth","GoalsScored","QualifiedTeams","MatchesPlayed","Attendance"],axis = 1)
 #Since variables like Year,Datetime,Stage
 def info(df):
     variables = []
@@ -47,6 +48,8 @@ matches = Matches.drop(["Year"], axis = 1)
 #relabeling the team name
 matches = pd.merge(matches, Ranking, left_on="Home Team Name", right_on="country_full", how="left")
 matches = pd.merge(matches, Ranking, left_on="Away Team Name", right_on="country_full", how="left", suffixes=("_home", "_away"))
+champion_count = Champion["Winner"].value_counts().to_dict()
+
 def indexing_theteams(df):
     teams = {}
     index = 0
@@ -111,10 +114,6 @@ def getting_team_info(df):
             Name.append(row["Home Team Name"])
         if row["Away Team Name"] not in Name:
             Name.append(row["Away Team Name"])
-print(matches.head(10))
-
-
-    
-    
+print(matches.tail(10))
 
         
