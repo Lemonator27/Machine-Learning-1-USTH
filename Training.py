@@ -1,16 +1,24 @@
 import pandas as pd 
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+#Getting the necessary DataFrame
 Matches = pd.read_csv('C:/Users/Lam/OneDrive/Máy tính/Data Stuffs/Machine-Learning-1-USTH/CSV files/WorldCupMatches.csv')
 Champion = pd.read_csv("C:/Users/Lam/OneDrive/Máy tính/Data Stuffs/Machine-Learning-1-USTH/CSV files/WorldCups.csv")
 Ranking = pd.read_csv("C:/Users/Lam/OneDrive/Máy tính/Data Stuffs/Machine-Learning-1-USTH/CSV files/fifa_ranking-2023-07-20.csv", parse_dates=["rank_date"])
+
+#Since we want to predict future matches it is best to take the data of modern days
 start_date = pd.to_datetime('2022-01-01')
 end_date = pd.to_datetime('2022-02-11')
+
+#Dropping the unnecessary columns 
 Ranking = Ranking[(Ranking["rank_date"]>start_date)&(Ranking["rank_date"]<end_date)]
 Ranking = Ranking.drop(["rank","country_abrv","previous_points","confederation","rank_change","rank_date"], axis = 1)
-print(Ranking.head(10))
 Champion = Champion.drop(["Year","Country","Runners-Up","Third","Fourth","GoalsScored","QualifiedTeams","MatchesPlayed","Attendance"],axis = 1)
-#Since variables like Year,Datetime,Stage
+matches = Matches.drop(["Year"], axis = 1)
+
+
+#Getting information on the columns
 def info(df):
     variables = []
     data_types = []
@@ -36,20 +44,24 @@ def info(df):
     return output
 #This shows that the Matches dataframe has null values
 print(info(Matches))
-Matches = Matches.dropna()
 
 print(Matches.columns)
 
 # sns.countplot(Champion["Country"])
 # plt.show()
 #Replacing names from the Soviet era
+def change_name(df):
+    if df["Winner"] in ["Germany FR"]:
+        df["Winner"] = "Germany"
+    return df
+Champion = Champion.apply(change_name,axis =1)
 
-matches = Matches.drop(["Year"], axis = 1)
-#relabeling the team name
+
+#Merge in order to get the fifa point for away and home team
 matches = pd.merge(matches, Ranking, left_on="Home Team Name", right_on="country_full", how="left")
 matches = pd.merge(matches, Ranking, left_on="Away Team Name", right_on="country_full", how="left", suffixes=("_home", "_away"))
 champion_count = Champion["Winner"].value_counts().to_dict()
-
+#relabeling the team name
 def indexing_theteams(df):
     teams = {}
     index = 0
@@ -64,11 +76,24 @@ def indexing_theteams(df):
 teams_index = indexing_theteams(matches)
 print(teams_index)
 
+
+matches["Championship Home"] = 0
+matches["Championship Away"] = 0
+def get_champion(row):
+    if row["Home Team Name"] in champion_count:
+        row["Championship Home"] = champion_count[row["Home Team Name"]]
+    if row["Away Team Name"] in champion_count:
+        row["Championship Away"] = champion_count[row["Away Team Name"]]
+    return row
+
+matches = matches.apply(get_champion, axis=1)
+
 matches["Home Team Name"] = matches["Home Team Name"].apply(lambda x: teams_index[x])
 matches["Away Team Name"] = matches["Away Team Name"].apply(lambda x: teams_index[x])
+
 matches["Who Wins"] = 0
 matches["Goal Difference"] = 0
-matches["Championship Won"] = 0
+
 matches["Goal Difference"] = matches["Home Team Goals"] - matches["Away Team Goals"]
 
 def gettingwhowins(df):
@@ -104,16 +129,4 @@ def getting_missing(df):
 
 MISS = getting_missing(matches)
 print(MISS)
-def getting_team_info(df):
-    Teams = {}
-    Name = []
-    Fifa_point = []
-    Championship = []
-    for lab,row in df.iterrows():
-        if row["Home Team Name"] not in Name:
-            Name.append(row["Home Team Name"])
-        if row["Away Team Name"] not in Name:
-            Name.append(row["Away Team Name"])
-print(matches.tail(10))
-
-        
+print(matches.head(10))
