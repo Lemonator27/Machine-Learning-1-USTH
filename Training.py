@@ -1,7 +1,10 @@
 import pandas as pd 
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from sklearn.ensemble import RandomForestClassifier
 #Getting the necessary DataFrame
 Matches = pd.read_csv('C:/Users/Lam/OneDrive/Máy tính/Data Stuffs/Machine-Learning-1-USTH/CSV files/WorldCupMatches.csv')
 Champion = pd.read_csv("C:/Users/Lam/OneDrive/Máy tính/Data Stuffs/Machine-Learning-1-USTH/CSV files/WorldCups.csv")
@@ -55,7 +58,6 @@ def change_name(df):
         df["Winner"] = "Germany"
     return df
 Champion = Champion.apply(change_name,axis =1)
-
 
 #Merge in order to get the fifa point for away and home team
 matches = pd.merge(matches, Ranking, left_on="Home Team Name", right_on="country_full", how="left")
@@ -130,3 +132,34 @@ def getting_missing(df):
 MISS = getting_missing(matches)
 print(MISS)
 print(matches.head(10))
+matches = matches.dropna()
+print(matches.shape)
+matches = matches.drop(["Home Team Goals","Away Team Goals","Goal Difference"],axis = 1)
+print(matches.head(10))
+X = matches[["Home Team Name","Away Team Name","total_points_home","total_points_away","Championship Home","Championship Away"]].values
+y = matches[["Who Wins"]].values
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+logreg = LogisticRegression()
+# Fit the model to the training data
+logreg.fit(X_train, y_train)
+
+# Predict on the test data
+y_pred = logreg.predict(X_test)
+
+# Calculate the accuracy
+accuracy = accuracy_score(y_test, y_pred)
+
+print("Accuracy:", accuracy)
+
+rf = RandomForestClassifier()
+
+# Fit the model to the training data
+rf.fit(X_train, y_train)
+
+# Predict on the test data
+y_pred = rf.predict(X_test)
+
+# Calculate the accuracy
+accuracy = accuracy_score(y_test, y_pred)
+
+print("Accuracy:", accuracy)
