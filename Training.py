@@ -1,10 +1,12 @@
 import pandas as pd 
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix
 #Getting the necessary DataFrame
 Matches = pd.read_csv('C:/Users/Lam/OneDrive/Máy tính/Data Stuffs/Machine-Learning-1-USTH/CSV files/WorldCupMatches.csv')
 Champion = pd.read_csv("C:/Users/Lam/OneDrive/Máy tính/Data Stuffs/Machine-Learning-1-USTH/CSV files/WorldCups.csv")
@@ -45,7 +47,7 @@ def info(df):
     })    
         
     return output
-#This shows that the Matches dataframe has null values
+
 print(info(Matches))
 
 print(Matches.columns)
@@ -63,6 +65,7 @@ Champion = Champion.apply(change_name,axis =1)
 matches = pd.merge(matches, Ranking, left_on="Home Team Name", right_on="country_full", how="left")
 matches = pd.merge(matches, Ranking, left_on="Away Team Name", right_on="country_full", how="left", suffixes=("_home", "_away"))
 champion_count = Champion["Winner"].value_counts().to_dict()
+
 #relabeling the team name
 def indexing_theteams(df):
     teams = {}
@@ -78,24 +81,25 @@ def indexing_theteams(df):
 teams_index = indexing_theteams(matches)
 print(teams_index)
 
-
+#Adding columns for the amount of championship wons
 matches["Championship Home"] = 0
 matches["Championship Away"] = 0
+
 def get_champion(row):
     if row["Home Team Name"] in champion_count:
         row["Championship Home"] = champion_count[row["Home Team Name"]]
     if row["Away Team Name"] in champion_count:
         row["Championship Away"] = champion_count[row["Away Team Name"]]
     return row
-
 matches = matches.apply(get_champion, axis=1)
 
+#Indexing the teams
 matches["Home Team Name"] = matches["Home Team Name"].apply(lambda x: teams_index[x])
 matches["Away Team Name"] = matches["Away Team Name"].apply(lambda x: teams_index[x])
 
+#News columns for who wins
 matches["Who Wins"] = 0
 matches["Goal Difference"] = 0
-
 matches["Goal Difference"] = matches["Home Team Goals"] - matches["Away Team Goals"]
 
 def gettingwhowins(df):
@@ -107,8 +111,8 @@ def gettingwhowins(df):
 
 matches = matches.apply(gettingwhowins,axis = 1)
 matches = matches.drop(["country_full_home","country_full_away"],axis = 1)
-# matches = matches.drop(["Home Team Goals","Away Team Goals"],axis = 1)
 
+#Seeing if any row have a NaN value
 def getting_missing(df):
     missing_values = {}
     away_name = []
@@ -135,9 +139,9 @@ print(matches.head(10))
 matches = matches.dropna()
 print(matches.shape)
 matches = matches.drop(["Home Team Goals","Away Team Goals","Goal Difference"],axis = 1)
-print(matches.head(10))
+print(matches.columns)
 X = matches[["Home Team Name","Away Team Name","total_points_home","total_points_away","Championship Home","Championship Away"]].values
-y = matches[["Who Wins"]].values
+y = matches[["Who Wins"]].values.ravel()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 logreg = LogisticRegression()
 # Fit the model to the training data
@@ -148,7 +152,7 @@ y_pred = logreg.predict(X_test)
 
 # Calculate the accuracy
 accuracy = accuracy_score(y_test, y_pred)
-
+cm = confusion_matrix(y_test, y_pred)
 print("Accuracy:", accuracy)
 
 rf = RandomForestClassifier()
@@ -163,3 +167,21 @@ y_pred = rf.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 
 print("Accuracy:", accuracy)
+
+print("Confusion Matrix:")
+print(cm)
+#To get user input
+def getting_input(name1,name2):
+    x = []
+    try:
+        x.append(teams_index[name1])
+        x.append(teams_index[name2])
+        x.append(Ranking.loc[Ranking["country_full"] == name1,"total_points"].values[0])
+        x.append(Ranking.loc[Ranking["country_full"] == name2,"total_points"].values[0])
+        x.append(champion_count[name1])
+        x.append(champion_count[name2])
+        x = np.array(x).reshape(1, -1)
+    except Exception as e:
+        print("Test") 
+    return logreg.predict(x)[0]
+print(getting_input("Germany","Brazil"))
