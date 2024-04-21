@@ -51,7 +51,6 @@ def info(df):
 
 print(info(Matches))
 
-print(Matches.columns)
 
 # sns.countplot(Champion["Country"])
 # plt.show()
@@ -63,6 +62,7 @@ def change_name(df):
         
     return df
 Champion = Champion.apply(change_name,axis =1)
+
 def change_name_team(df):
     
     if df["Home Team Name"] in ["IR Iran"]:
@@ -79,6 +79,7 @@ def change_name_team(df):
         
     return df
 matches = matches.apply(change_name_team,axis = 1)
+
 print("Results:", "Serbia" in list(Ranking["country_full"]))
 def change_name_ranking(df):
     
@@ -174,10 +175,8 @@ def getting_missing(df):
 
 MISS = getting_missing(matches)
 print(MISS)
-print(matches.head(10))
 #Dropping columns that doesnt have fifapoints
 matches = matches.dropna()
-print(matches.shape)
 
 #Dropping unpredictable columns
 matches = matches.drop(["Home Team Goals","Away Team Goals","Goal Difference"],axis = 1)
@@ -197,7 +196,7 @@ y_pred = logreg.predict(X_test)
 # Calculate the accuracy
 accuracy = accuracy_score(y_test, y_pred)
 cm = confusion_matrix(y_test, y_pred)
-print("Accuracy:", accuracy)
+print("Accuracy of logistics classification:", accuracy)
 
 rf = RandomForestClassifier()
 
@@ -210,11 +209,9 @@ y_pred = rf.predict(X_test)
 # Calculate the accuracy
 accuracy = accuracy_score(y_test, y_pred)
 
-print("Accuracy:", accuracy)
+print("Accuracy of Random Forest:", accuracy)
 
-print("Confusion Matrix:")
 print(cm)
-#To get user input
 def getting_input(name1, name2):
     if name1 == name2:
         print("Invalide names")
