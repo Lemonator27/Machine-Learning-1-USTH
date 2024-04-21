@@ -63,6 +63,36 @@ def change_name(df):
         
     return df
 Champion = Champion.apply(change_name,axis =1)
+def change_name_team(df):
+    
+    if df["Home Team Name"] in ["IR Iran"]:
+        df["Home Team Name"] = "Iran"
+        
+    if df["Away Team Name"] in ["IR Iran"]:
+        df["Away Team Name"] = "Iran"
+        
+    if df["Home Team Name"] in ["Serbia and Montenegro"]:
+        df["Home Team Name"] = "Serbia"
+        
+    if df["Away Team Name"] in ["Serbia and Montenegro"]:
+        df["Away Team Name"] = "Serbia"
+        
+    return df
+matches = matches.apply(change_name_team,axis = 1)
+print("Results:", "Serbia" in list(Ranking["country_full"]))
+def change_name_ranking(df):
+    
+    if df["country_full"] in ["IR Iran"]:
+        df["country_full"] = "Iran"
+    #This is because pandas cant find netherlands for some reason
+    if df["country_full"] in ["Netherlands"]:
+        df["country_full"] = "Netherlands"
+    
+    if df["country_full"] in ["Côte d'Ivoire"]:
+        df["country_full"] = "Ivory Coast"
+        
+    return df
+Ranking = Ranking.apply(change_name_ranking,axis = 1)
 
 #Merge in order to get the fifa point for away and home team
 matches = pd.merge(matches, Ranking, left_on="Home Team Name", right_on="country_full", how="left")
@@ -152,6 +182,8 @@ print(matches.shape)
 #Dropping unpredictable columns
 matches = matches.drop(["Home Team Goals","Away Team Goals","Goal Difference"],axis = 1)
 print(matches.columns)
+print(matches[(matches["Home Team Name"] == 36)|(matches["Away Team Name"] == 36)])
+print(list(Ranking["country_full"]))
 X = matches[["Home Team Name","Away Team Name","total_points_home","total_points_away","Championship Home","Championship Away"]].values
 y = matches[["Who Wins"]].values.ravel()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -184,32 +216,41 @@ print("Confusion Matrix:")
 print(cm)
 #To get user input
 def getting_input(name1, name2):
+    if name1 == name2:
+        print("Invalide names")
+        raise ValueError("Same Names")
     x = []
-    # try:
-    x.append(teams_index[name1])
-    x.append(teams_index[name2])
-    x.append(Ranking.loc[Ranking["country_full"] == name1, "total_points"].values[0])
-    x.append(Ranking.loc[Ranking["country_full"] == name2, "total_points"].values[0])
-    if name1 in champion_count.keys():
-        x.append(champion_count[name1])
-    else:
-        x.append(0)
+    try:
+        x.append(teams_index[name1])
+        x.append(teams_index[name2])
+        x.append(Ranking.loc[Ranking["country_full"] == name1, "total_points"].values[0])
+        x.append(Ranking.loc[Ranking["country_full"] == name2, "total_points"].values[0])
         
-    if name2 in champion_count.keys():
-        x.append(champion_count[name2])
-    else:
-        x.append(0)
-    
-    x = np.array(x).reshape(1, -1)
-    # except Exception as e:
-    #     print("Not valid names")
+        if name1 in champion_count.keys():
+            x.append(champion_count[name1])
+        else:
+            x.append(0)
+            
+        if name2 in champion_count.keys():
+            x.append(champion_count[name2])
+        else:
+            x.append(0)
+        
+        x = np.array(x).reshape(1, -1)
+    except Exception as e:
+        print("Not valid names")
     return logreg.predict(x)[0]
 print(getting_input("Germany","Brazil"))
 
 def mua_giai(arr):
+    print("Current matches:", arr)
+    print("")
     if len(arr) == 1:
         print("Finals: ", arr)
-        return getting_input(arr[0][0],arr[0][1])
+        if getting_input(arr[0][0],arr[0][1]) == 1:
+            return arr[0][0]
+        else:
+            return arr[0][1]
     
     next_round = []
     
@@ -221,21 +262,33 @@ def mua_giai(arr):
         result2 = getting_input(match2[0], match2[1])
         if result1 == 1:
             winner1 = match1[0]
+            print("Match: ",match1)
+            print("Winner is: ",match1[0])
+            print("")
         else:
             winner1 = match1[1]
+            print("Match: ",match1)
+            print("Winner is: ",match1[1])
+            print("")
             
         if result2 == 1:
-            winner2 = match2[0] 
+            winner2 = match2[0]
+            print("Match: ",match2)
+            print("Winner is: ",match2[0])
+            print("")
         else:
             winner2 = match2[1]
+            print("Match: ",match2)
+            print("Winner is: ",match2[1])
+            print("")
         
         next_round.append([winner1, winner2])
     
     return mua_giai(next_round)
 
 matches = [
-    ["Germany", "Brazil"],
-    ["France", "Spain"],
+    ["Netherlands", "Brazil"],
+    ["Iran", "Spain"],
     ["Italy", "Argentina"],
     ["Paraguay", "Portugal"]
 ]
