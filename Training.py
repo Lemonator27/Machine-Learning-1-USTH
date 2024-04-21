@@ -145,10 +145,11 @@ def getting_missing(df):
 MISS = getting_missing(matches)
 print(MISS)
 print(matches.head(10))
-
+#Dropping columns that doesnt have fifapoints
 matches = matches.dropna()
 print(matches.shape)
 
+#Dropping unpredictable columns
 matches = matches.drop(["Home Team Goals","Away Team Goals","Goal Difference"],axis = 1)
 print(matches.columns)
 X = matches[["Home Team Name","Away Team Name","total_points_home","total_points_away","Championship Home","Championship Away"]].values
