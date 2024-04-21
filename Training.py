@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix
+
 #Getting the necessary DataFrame
 Matches = pd.read_csv('C:/Users/Lam/OneDrive/Máy tính/Data Stuffs/Machine-Learning-1-USTH/CSV files/WorldCupMatches.csv')
 Champion = pd.read_csv("C:/Users/Lam/OneDrive/Máy tính/Data Stuffs/Machine-Learning-1-USTH/CSV files/WorldCups.csv")
@@ -56,8 +57,10 @@ print(Matches.columns)
 # plt.show()
 #Replacing names from the Soviet era
 def change_name(df):
+    
     if df["Winner"] in ["Germany FR"]:
         df["Winner"] = "Germany"
+        
     return df
 Champion = Champion.apply(change_name,axis =1)
 
@@ -70,10 +73,13 @@ champion_count = Champion["Winner"].value_counts().to_dict()
 def indexing_theteams(df):
     teams = {}
     index = 0
+    
     for lab,row in matches.iterrows():
+        
         if row["Home Team Name"] not in teams.keys():
             teams[row["Home Team Name"]] = index
             index += 1
+            
         if row["Away Team Name"] not in teams.keys():
             teams[row["Away Team Name"]] = index
             index += 1
@@ -88,8 +94,10 @@ matches["Championship Away"] = 0
 def get_champion(row):
     if row["Home Team Name"] in champion_count:
         row["Championship Home"] = champion_count[row["Home Team Name"]]
+        
     if row["Away Team Name"] in champion_count:
         row["Championship Away"] = champion_count[row["Away Team Name"]]
+    
     return row
 matches = matches.apply(get_champion, axis=1)
 
@@ -105,6 +113,7 @@ matches["Goal Difference"] = matches["Home Team Goals"] - matches["Away Team Goa
 def gettingwhowins(df):
     if df["Goal Difference"] > 0:
         df["Who Wins"] = 1 #Home team wins
+        
     if df["Goal Difference"] < 0:
         df["Who Wins"] = 0 #Away team wins
     return df
@@ -136,8 +145,10 @@ def getting_missing(df):
 MISS = getting_missing(matches)
 print(MISS)
 print(matches.head(10))
+
 matches = matches.dropna()
 print(matches.shape)
+
 matches = matches.drop(["Home Team Goals","Away Team Goals","Goal Difference"],axis = 1)
 print(matches.columns)
 X = matches[["Home Team Name","Away Team Name","total_points_home","total_points_away","Championship Home","Championship Away"]].values
@@ -171,17 +182,62 @@ print("Accuracy:", accuracy)
 print("Confusion Matrix:")
 print(cm)
 #To get user input
-def getting_input(name1,name2):
+def getting_input(name1, name2):
     x = []
-    try:
-        x.append(teams_index[name1])
-        x.append(teams_index[name2])
-        x.append(Ranking.loc[Ranking["country_full"] == name1,"total_points"].values[0])
-        x.append(Ranking.loc[Ranking["country_full"] == name2,"total_points"].values[0])
+    # try:
+    x.append(teams_index[name1])
+    x.append(teams_index[name2])
+    x.append(Ranking.loc[Ranking["country_full"] == name1, "total_points"].values[0])
+    x.append(Ranking.loc[Ranking["country_full"] == name2, "total_points"].values[0])
+    if name1 in champion_count.keys():
         x.append(champion_count[name1])
+    else:
+        x.append(0)
+        
+    if name2 in champion_count.keys():
         x.append(champion_count[name2])
-        x = np.array(x).reshape(1, -1)
-    except Exception as e:
-        print("Test") 
+    else:
+        x.append(0)
+    
+    x = np.array(x).reshape(1, -1)
+    # except Exception as e:
+    #     print("Not valid names")
     return logreg.predict(x)[0]
 print(getting_input("Germany","Brazil"))
+
+def mua_giai(arr):
+    if len(arr) == 1:
+        print("Finals: ", arr)
+        return getting_input(arr[0][0],arr[0][1])
+    
+    next_round = []
+    
+    for i in range(0, len(arr), 2):
+        match1 = arr[i]
+        match2 = arr[i + 1]
+        
+        result1 = getting_input(match1[0], match1[1])
+        result2 = getting_input(match2[0], match2[1])
+        if result1 == 1:
+            winner1 = match1[0]
+        else:
+            winner1 = match1[1]
+            
+        if result2 == 1:
+            winner2 = match2[0] 
+        else:
+            winner2 = match2[1]
+        
+        next_round.append([winner1, winner2])
+    
+    return mua_giai(next_round)
+
+matches = [
+    ["Germany", "Brazil"],
+    ["France", "Spain"],
+    ["Italy", "Argentina"],
+    ["Paraguay", "Portugal"]
+]
+
+result = mua_giai(matches)
+print(result)
