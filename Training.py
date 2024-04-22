@@ -142,13 +142,15 @@ matches["Goal Difference"] = 0
 matches["Goal Difference"] = matches["Home Team Goals"] - matches["Away Team Goals"]
 
 def gettingwhowins(df):
-    if df["Goal Difference"] > 0:
-        df["Who Wins"] = 1 #Home team wins
+    if df["Goal Difference"] == 0:
+        df["Who Wins"] = 0 #Draw
         
-    if df["Goal Difference"] < 0:
-        df["Who Wins"] = 0 #Away team wins
+    elif df["Goal Difference"] > 0:
+        df["Who Wins"] = 1 #Home team wins
+    else: 
+        df["Who Wins"] = 2 #Away team wins
     return df
-
+print((matches[matches["Home Team Goals"] == matches["Away Team Goals"]]).shape)
 matches = matches.apply(gettingwhowins,axis = 1)
 matches = matches.drop(["country_full_home","country_full_away"],axis = 1)
 
@@ -177,14 +179,15 @@ MISS = getting_missing(matches)
 print(MISS)
 #Dropping columns that doesnt have fifapoints
 matches = matches.dropna()
-
+print(matches["Who Wins"].value_counts())
+print(matches.head(15))
 #Dropping unpredictable columns
 matches = matches.drop(["Home Team Goals","Away Team Goals","Goal Difference"],axis = 1)
 #Seperating data
 X = matches[["Home Team Name","Away Team Name","total_points_home","total_points_away","Championship Home","Championship Away"]].values
 y = matches[["Who Wins"]].values.ravel()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-logreg = LogisticRegression()
+logreg = LogisticRegression(multi_class='multinomial')
 
 # Fit the model to the training data
 logreg.fit(X_train, y_train)
@@ -199,7 +202,7 @@ accuracy = accuracy_score(y_test, y_pred)
 cm = confusion_matrix(y_test, y_pred)
 print("Accuracy of logistics classification:", accuracy)
 
-rf = RandomForestClassifier()
+rf = RandomForestClassifier(n_estimators=100, random_state=42)
 
 # Fit the model to the training data
 rf.fit(X_train, y_train)
@@ -220,6 +223,7 @@ def getting_input(name1, name2):
         print("Invalide names")
         raise ValueError("Same Names")
     x = []
+    
     try:
         x.append(teams_index[name1])
         x.append(teams_index[name2])
@@ -239,19 +243,27 @@ def getting_input(name1, name2):
         x = np.array(x).reshape(1, -1)
     except Exception as e:
         print("Not valid names")
-    return logreg.predict(x)[0]
-print(getting_input("Germany","Brazil"))
-
+    return logreg.predict(x)[0], logreg.predict_proba(x)[0]
+result,prop = getting_input("Iran","Brazil")
+print(result)
+print(prop)
+print(matches.head(15))
 #Getting the entire tournament
 def mua_giai(arr):
     print("Current matches:", arr)
     print("")
     if len(arr) == 1:
+        result,prob = getting_input(arr[0][0],arr[0][1])
         print("Finals: ", arr)
-        if getting_input(arr[0][0],arr[0][1]) == 1:
+        if result == 1:
+            return arr[0][0]
+        if result == 2:
+            return arr[0][1]
+        elif prob[1] > prob[2]:
             return arr[0][0]
         else:
             return arr[0][1]
+            
         
     if len(arr) % 2 == 1:
         raise ValueError("Not valid team")
@@ -261,16 +273,26 @@ def mua_giai(arr):
         match1 = arr[i]
         match2 = arr[i + 1]
         
-        result1 = getting_input(match1[0], match1[1])
-        result2 = getting_input(match2[0], match2[1])
+        result1,prob1 = getting_input(match1[0], match1[1])
+        result2,prob2 = getting_input(match2[0], match2[1])
         
         if result1 == 1:
             winner1 = match1[0]
             print("Match: ",match1)
             print("Winner is: ",match1[0])
             print("")
-        else:
+        elif result1 == 2:
             winner1 = match1[1]
+            print("Match: ",match1)
+            print("Winner is: ",match1[1])
+            print("")
+        elif prob1[1] > prob1[2]:
+            winner1 = match1[0]
+            print("Match: ",match1)
+            print("Winner is: ",match1[0])
+            print("")
+        else:
+            winner2 = match1[1]
             print("Match: ",match1)
             print("Winner is: ",match1[1])
             print("")
@@ -280,20 +302,29 @@ def mua_giai(arr):
             print("Match: ",match2)
             print("Winner is: ",match2[0])
             print("")
+        elif result2 == 2:
+            winner2 = match2[1]
+            print("Match: ",match2)
+            print("Winner is: ",match2[1])
+            print("")
+        elif prob2[1] > prob2[2]:
+            winner2 = match2[0]
+            print("Match: ",match2)
+            print("Winner is: ",match2[0])
+            print("")
         else:
             winner2 = match2[1]
             print("Match: ",match2)
             print("Winner is: ",match2[1])
             print("")
-        
         next_round.append([winner1, winner2])
     
     return mua_giai(next_round)
 
 matches = [
-    ["Iran", "Brazil"],
+    ["Italy", "Portugal"],
     ["Germany", "Spain"],
-    ["Italy", "Argentina"],
+    ["USA", "Argentina"],
     ["Paraguay", "Portugal"]
 ]
 
