@@ -180,18 +180,19 @@ matches = matches.dropna()
 
 #Dropping unpredictable columns
 matches = matches.drop(["Home Team Goals","Away Team Goals","Goal Difference"],axis = 1)
-print(matches.columns)
-print(matches[(matches["Home Team Name"] == 36)|(matches["Away Team Name"] == 36)])
-print(list(Ranking["country_full"]))
+#Seperating data
 X = matches[["Home Team Name","Away Team Name","total_points_home","total_points_away","Championship Home","Championship Away"]].values
 y = matches[["Who Wins"]].values.ravel()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 logreg = LogisticRegression()
+
 # Fit the model to the training data
 logreg.fit(X_train, y_train)
 
 # Predict on the test data
 y_pred = logreg.predict(X_test)
+coef = logreg.coef_
+print("coef: ", coef)
 
 # Calculate the accuracy
 accuracy = accuracy_score(y_test, y_pred)
@@ -212,6 +213,8 @@ accuracy = accuracy_score(y_test, y_pred)
 print("Accuracy of Random Forest:", accuracy)
 
 print(cm)
+
+#Getting user input
 def getting_input(name1, name2):
     if name1 == name2:
         print("Invalide names")
@@ -239,6 +242,7 @@ def getting_input(name1, name2):
     return logreg.predict(x)[0]
 print(getting_input("Germany","Brazil"))
 
+#Getting the entire tournament
 def mua_giai(arr):
     print("Current matches:", arr)
     print("")
@@ -248,7 +252,9 @@ def mua_giai(arr):
             return arr[0][0]
         else:
             return arr[0][1]
-    
+        
+    if len(arr) % 2 == 1:
+        raise ValueError("Not valid team")
     next_round = []
     
     for i in range(0, len(arr), 2):
@@ -257,6 +263,7 @@ def mua_giai(arr):
         
         result1 = getting_input(match1[0], match1[1])
         result2 = getting_input(match2[0], match2[1])
+        
         if result1 == 1:
             winner1 = match1[0]
             print("Match: ",match1)
@@ -284,8 +291,8 @@ def mua_giai(arr):
     return mua_giai(next_round)
 
 matches = [
-    ["Netherlands", "Brazil"],
-    ["Iran", "Spain"],
+    ["Iran", "Brazil"],
+    ["Germany", "Spain"],
     ["Italy", "Argentina"],
     ["Paraguay", "Portugal"]
 ]
