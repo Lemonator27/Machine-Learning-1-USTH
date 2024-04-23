@@ -9,9 +9,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix
 
 #Getting the necessary DataFrame
-Matches = pd.read_csv('C:/Users/Lam/OneDrive/Máy tính/Data Stuffs/Machine-Learning-1-USTH/CSV files/WorldCupMatches.csv')
-Champion = pd.read_csv("C:/Users/Lam/OneDrive/Máy tính/Data Stuffs/Machine-Learning-1-USTH/CSV files/WorldCups.csv")
-Ranking = pd.read_csv("C:/Users/Lam/OneDrive/Máy tính/Data Stuffs/Machine-Learning-1-USTH/CSV files/fifa_ranking-2023-07-20.csv", parse_dates=["rank_date"])
+Matches = pd.read_csv('CSV files/WorldCupMatches.csv')
+Champion = pd.read_csv("CSV files/WorldCups.csv")
+Ranking = pd.read_csv("CSV files/fifa_ranking-2023-07-20.csv", parse_dates=["rank_date"])
 
 #Since we want to predict future matches it is best to take the data of modern days
 start_date = pd.to_datetime('2022-01-01')
