@@ -279,42 +279,68 @@ def mua_giai(arr):
         if result1 == 1:
             winner1 = match1[0]
             print("Match: ",match1)
+            print(f"Probability of drawing is {prob1[0]}")
+            print(f"Home Team Winning is {prob1[1]}")
+            print(f"Away Team is {prob1[2]}")
             print("Winner is: ",match1[0])
             print("")
         elif result1 == 2:
             winner1 = match1[1]
             print("Match: ",match1)
+            print(f"Probability of drawing is {prob1[0]}")
+            print(f"Home Team Winning is {prob1[1]}")
+            print(f"Away Team is {prob1[2]}")
             print("Winner is: ",match1[1])
             print("")
         elif prob1[1] > prob1[2]:
             winner1 = match1[0]
             print("Match: ",match1)
+            print(f"Probability of drawing is {prob1[0]}")
+            print(f"Home Team Winning is {prob1[1]}")
+            print(f"Away Team is {prob1[2]}")
             print("Winner is: ",match1[0])
             print("")
         else:
             winner2 = match1[1]
             print("Match: ",match1)
+            print(f"Probability of drawing is {prob1[0]}")
+            print(f"Home Team Winning is {prob1[1]}")
+            print(f"Away Team is {prob1[2]}")
             print("Winner is: ",match1[1])
             print("")
             
         if result2 == 1:
             winner2 = match2[0]
             print("Match: ",match2)
+            print(f"Probability of drawing is {prob2[0]}")
+            print(f"Home Team Winning is {prob2[1]}")
+            print(f"Away Team is {prob2[2]}")
             print("Winner is: ",match2[0])
             print("")
         elif result2 == 2:
             winner2 = match2[1]
             print("Match: ",match2)
+            print(f"Probability of drawing is {prob2[0]}")
+            print(f"Home Team Winning is {prob2[1]}")
+            print(f"Away Team is {prob2[2]}")
             print("Winner is: ",match2[1])
             print("")
         elif prob2[1] > prob2[2]:
             winner2 = match2[0]
             print("Match: ",match2)
+            print("Match: ",match2)
+            print(f"Probability of drawing is {prob2[0]}")
+            print(f"Home Team Winning is {prob2[1]}")
+            print(f"Away Team is {prob2[2]}")
             print("Winner is: ",match2[0])
             print("")
         else:
             winner2 = match2[1]
             print("Match: ",match2)
+            print("Match: ",match2)
+            print(f"Probability of drawing is {prob2[0]}")
+            print(f"Home Team Winning is {prob2[1]}")
+            print(f"Away Team is {prob2[2]}")
             print("Winner is: ",match2[1])
             print("")
         next_round.append([winner1, winner2])
