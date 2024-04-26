@@ -356,7 +356,6 @@ matches = [
 
 result = mua_giai(matches)
 print(result)
-# Create the confusion matrix
 
 # Visualize the confusion matrix using seaborn heatmap
 sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
