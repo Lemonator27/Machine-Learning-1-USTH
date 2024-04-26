@@ -187,7 +187,7 @@ matches = matches.drop(["Home Team Goals","Away Team Goals","Goal Difference"],a
 X = matches[["Home Team Name","Away Team Name","total_points_home","total_points_away","Championship Home","Championship Away"]].values
 y = matches[["Who Wins"]].values.ravel()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-logreg = LogisticRegression(multi_class='multinomial')
+logreg = LogisticRegression(max_iter = 1500, multi_class='multinomial')
 
 # Fit the model to the training data
 logreg.fit(X_train, y_train)
@@ -202,7 +202,7 @@ accuracy = accuracy_score(y_test, y_pred)
 cm = confusion_matrix(y_test, y_pred)
 print("Accuracy of logistics classification:", accuracy)
 
-rf = RandomForestClassifier(n_estimators=100, random_state=42)
+rf = RandomForestClassifier(n_estimators=200, random_state=42)
 
 # Fit the model to the training data
 rf.fit(X_train, y_train)
@@ -356,3 +356,11 @@ matches = [
 
 result = mua_giai(matches)
 print(result)
+# Create the confusion matrix
+
+# Visualize the confusion matrix using seaborn heatmap
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("Confusion Matrix")
+plt.show()
